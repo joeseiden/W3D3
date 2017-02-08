@@ -20,12 +20,12 @@ class Course < ActiveRecord::Base
     through: :enrollments,
     source: :student
 
-  belongs_to :prerequisite,
+  has_one :prerequisite,
     class_name: "Course"
     foreign_key: :prereq_id
     primary_key: :id
 
-  belongs_to :instructor,
+  has_one :instructor,
     class_name: "User",
     foreign_key: :instructor_id,
     primary_key: :id
