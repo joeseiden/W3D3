@@ -1,4 +1,5 @@
 require 'securerandom'
+require_relative 'visit'
 
 class ShortenedURL < ActiveRecord::Base
   include SecureRandom
@@ -8,6 +9,16 @@ class ShortenedURL < ActiveRecord::Base
     class_name: "User",
     foreign_key: :user_id,
     primary_key: :id
+
+  has_many :visits,
+    class_name: 'Visit',
+    foreign_key: :url_id,
+    primary_key: :id
+
+  has_many :visitors,
+    Proc.new { distinct },
+    through: :visits,
+    source: :visitors
 
   def self.random_code
     short_url_code = SecureRandom.urlsafe_base64
@@ -25,6 +36,18 @@ class ShortenedURL < ActiveRecord::Base
     short_url_code = ShortenedURL.random_code
 
     ShortenedURL.create!(short_url: short_url_code, long_url: long_url, user_id: user.id)
+  end
+
+  def num_clicks
+    Visit.all.count { |url| url.url_id == self.id }
+  end
+
+  def num_uniques
+    self.visitors.count
+  end
+
+  def num_recent_uniques
+    self.visitors.where(["visits.created_at >= ?", 10.minutes.ago]).count
   end
 
 end
