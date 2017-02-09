@@ -1,0 +1,42 @@
+require_relative '../app/models/shortened_url'
+require_relative '../app/models/user'
+require_relative '../app/models/visit'
+
+
+
+
+puts "I'm working now"
+
+puts "Input your email:"
+print "> "
+e_mail = STDIN.gets.chomp
+
+user = User.exists?(email: e_mail) ? User.find_by(email: e_mail) : User.create(email: e_mail)
+
+begin
+  puts "\nWhat do you want to do? \n\n0. Create shortened URL \n1. Visit shortened URL"
+  print "> "
+  user_input = STDIN.gets.chomp
+
+  case user_input
+  when "0"
+    puts "Type in your long url"
+    print "> "
+    long_url = STDIN.gets.chomp
+    shortened_url = ShortenedURL.generate(long_url, user)
+    puts "Short url is: #{shortened_url.short_url}"
+  when "1"
+    puts "Type in the shortened url"
+    print "> "
+    shortened_url = STDIN.gets.chomp
+    long_url = ShortenedURL.find_by short_url: shortened_url
+    puts "Launching #{long_url.long_url}"
+    Launchy.open(long_url.long_url)
+  end
+rescue
+  puts "\nOops! Invalid input.\n"
+  retry
+end
+
+
+puts "Goodbye!"
